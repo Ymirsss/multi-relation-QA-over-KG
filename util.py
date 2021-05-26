@@ -1,5 +1,5 @@
 import configparser
-import networkx as nx
+import networkx as nx##创建grpah的库-----nx.DiGraph()创建有向图
 import pandas as pd
 import numpy as np
 from math import ceil
@@ -16,9 +16,9 @@ def prep_dataset(path_KB, path_QA):
     '''
     Input:
             path_KB.txt, path_QA.txt
-    Return:
-            KG as network x graph object
-            list of ([q_word1, q_word2,...,], e_s, ans)             # e_s should be replaced inside the questions also
+    Return:返回
+            KG as network x graph object python里有向 graph化的KG
+            list of ([q_word1, q_word2,...,], e_s, ans)             # e_s should be replaced inside the questions also //e_s是topic entity
     '''
     # get KG
     df_graph = pd.read_csv(path_KB, sep=r'\s', header=None, names=['e_subject', 'relation', 'e_object'])
@@ -32,11 +32,12 @@ def prep_dataset(path_KB, path_QA):
     # Initialize Entity Linker
     entity_linker = EntityLinker(path_KB, path_QA)
 
-    # get parsed qn and the topic entity
+    # get parsed qn and the topic entity 获取用<e>替换过topic entity的q以及topic entity
     df_qn['q'], df_qn['e_s'] = zip(*df_qn['question_sentence'].apply(lambda x: entity_linker.find_entity(x)))
     qn_list = df_qn[['q', 'e_s', 'answer']].values.tolist()
 
     # convert to list of tuples
+    # list of([q_word1, q_word2, ..., ], e_s, ans)  # e_s should be replaced inside the questions also
     final_qn_list = [tuple(x) for x in qn_list]
     return KB, final_qn_list
 

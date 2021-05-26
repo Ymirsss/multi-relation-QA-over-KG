@@ -2,6 +2,8 @@ import tensorflow as tf
 
 d = 50
 
+#定义了state action  transition过程 reward
+
 class State():
     def __init__(self, q, e_s, e_t, h_t: set, t=1, q_t = {0: tf.zeros(d)}, H_t = {0: tf.zeros(d)}):
         self.q = q
@@ -32,8 +34,9 @@ class Rewards():
     def get_transition_reward(self, cur_state, action, next_state, ans):
         SAS = (cur_state, action, next_state)
         if self.rewards_dict.get(SAS): return self.rewards_dict.get(SAS)    # Skip computation if reward has previously been computed
-        
+   ### F_phi是shaping reward
         F_phi = self.gamma * self.phi(next_state) - self.phi(cur_state)
+   ###R是delayed terminal reward
         R = 1 if next_state.e_t == ans else 0
         reward = R + F_phi
         self.rewards_dict[SAS] = reward     # Cache the (SAS -> R) mapping
@@ -94,7 +97,7 @@ class Environment():
         
         return new_state
 
-    def get_possible_actions(self):
+    def get_possible_actions(self):#就是获取连接的边撒
         assert self.knowledge_graph.has_node(self.current_state.e_t), "State Error: No such node in graph"
 
         action_space = [(edge['relation'], neighbour) for neighbour, edge in self.knowledge_graph[self.current_state.e_t].items()]

@@ -1,4 +1,4 @@
-import silence_tensorflow.auto
+# import silence_tensorflow.auto
 import numpy as np
 import tensorflow as tf
 from Environment import d, State, Environment
@@ -24,6 +24,7 @@ class PolicyNetwork(tf.keras.Model):
         if saved_model_name:
             self.load_saved_model(saved_model_name)
 
+#似乎：：：：如果在创建class的时候写了call（）方法， 那么该class实例化出实例后， 实例名()就是调用call（）方法。
     def call(self, x):
         q_vector, H_t = x
         return self.sub_forward(q_vector, H_t)
@@ -36,12 +37,12 @@ class PolicyNetwork(tf.keras.Model):
             print('Load failed. Initialise new network.')
 
     def initialise_models(self):
-        self.GRU = GRU()
-        self.Perceptron = Perceptron()
-        self.Attention = Attention()
-        self.BiGRU = BiGRU()
-        self.SLP = SLP(self.T)
-        self.Embedder = Embedder()
+        self.GRU = GRU()#定义一个GRU 用于encode
+        self.Perceptron = Perceptron()#就是实现公式（5），用一个perceptron计算action得分
+        self.Attention = Attention()#实现公式（2）（3）（4），即用注意力机制实现relation-aware q representation
+        self.BiGRU = BiGRU()##一个两层的双向GRU
+        self.SLP = SLP(self.T)#Single Layer Perception，用于实现公式（1），即每一step都对q的gru embedding进行一个SLP变换，让q step-aware
+        self.Embedder = Embedder()#获取glove embedding的
 
     def initialise(self):
         if not self.env:
@@ -126,12 +127,12 @@ class PolicyNetwork(tf.keras.Model):
         print('============ TRAINING ============')
         for inputs in tqdm(train_set):
             with tf.GradientTape(persistent=True) as tape:
-                prediction, outputs = self.forward(inputs)
+                prediction, outputs = self.forward(inputs)#一次foward过程就是一次T-Hop推理过程，得到最终answer
                 y_hat.append(prediction)
                 if all(x is None for x in outputs):
                     continue
-                loss = -outputs[-1]
-            gradients = tape.gradient(loss, self.model.trainable_variables)
+                loss = -outputs[-1]#每一个数据的loss 即T-Hop累计的-reward
+            gradients = tape.gradient(loss, self.model.trainable_variables) #每预测一个样本，就梯度下降一次
             self.opt.apply_gradients(
                 zip(gradients, self.model.trainable_variables))
             losses.append(loss)
@@ -142,6 +143,7 @@ class PolicyNetwork(tf.keras.Model):
 
         return acc, loss
 
+#validation只用来看performance 不进行梯度下降
     def run_val_op(self, val_set, predictions=False):
         # Hyperparameters configuration
         self.model.beam_size = 32
@@ -165,7 +167,7 @@ class PolicyNetwork(tf.keras.Model):
     def forward(self, inputs):
         q, e_s, ans = inputs
         T = self.T
-
+      #得到q的glove embedding
         temp_q = np.empty((0, 50)).astype(np.float32)
         for w in q:
             embeded_word = self.model.Embedder.embed_word(w)
@@ -178,7 +180,9 @@ class PolicyNetwork(tf.keras.Model):
         q = tf.reshape(q, [1, *q.shape])
 
         r_0 = np.zeros(d).astype(np.float32)
+        #编码q
         q_vector = self.model.bigru(q)                   # BiGRU Module
+        ##进行推理、决策
         self.model.env.start_new_query(State(q, e_s, e_s, set()), ans)
         prediction, actions_onehot, action_probs, discount_r = self.model(
             [q_vector, self.model.gru(r_0)])
@@ -225,7 +229,7 @@ class PolicyNetwork(tf.keras.Model):
                     if self.use_attention:
                         q_t_star[t] = self.attention(r_star, q_t[t])
                     else:
-                        q_t_star[t] = tf.reduce_sum(q_t[t], 0)
+                        q_t_star[t] = tf.reduce_sum(q_t[t], 0)   
 
                     # Perceptron Module: Generate Semantic Score for action given q
                     if self.use_perceptron:
@@ -276,6 +280,7 @@ class PolicyNetwork(tf.keras.Model):
 
         return [prediction, actions_onehot, action_probs, discount_r]
 
+#实现公式（10）的一部分 ------discount后的reward累积
     def discount_rewards(self, rewards, normalize=False):
         discounted_r = tf.Variable(0, dtype=tf.float32)
         for t in reversed(range(0, len(rewards))):

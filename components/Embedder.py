@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import csv
 import networkx as nx
-
+#获取word、kb中entity relation的embedding
 class Embedder:
     def __init__(self):
         freebase_path = "./datasets/Freebase/"
@@ -52,6 +52,7 @@ class Embedder:
         return self.word_embeddings.loc[w].values
 
     #Try catch for finding the word embeddings from GLOVE
+    #将word转化为glove embedding
     def embed_word(self, word):
         # embedder.embed_word(word), where word is a string, would return a 50d vector (np.array)
         try:
@@ -61,6 +62,7 @@ class Embedder:
             print('Get a larger pre-trained GLOVE model', e)
 
     #Try catch for finding the entity embeddings from Freebase
+    #获取entity embedding
     def embed_entity(self, name):
         # embedder.embed_entity(entity_name), where entity_name is a string, would return a 50d vector (np.memmap, like np.array)
         modified_name = ''
@@ -84,6 +86,7 @@ class Embedder:
         
 
     # Try catch for finding the relation embeddings from Freebase
+    #获取relation embedding
     def embed_relation(self, relation): 
         # embedder.embed_relation(relation_name), where relation_name is a string, would return a 50d vector (np.memmap, like np.array)
         try:

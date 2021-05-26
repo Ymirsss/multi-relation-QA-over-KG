@@ -4,6 +4,7 @@ from Environment import d
 
 initializer = tf.keras.initializers.GlorotNormal()
 
+#Single Layer Perception，用于实现公式（1），即每一step都对q的gru embedding进行一个SLP变换，让q step-aware
 class SLP(layers.Layer):
     def __init__(self, T):
         super(SLP, self).__init__()

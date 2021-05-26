@@ -18,7 +18,7 @@ class GRU(layers.Layer):
         super(GRU, self).__init__()
         cell_1 = tf.keras.layers.GRUCell(d, dropout=dropout, recurrent_dropout=dropout) 
         cell_2 = tf.keras.layers.GRUCell(d, dropout=dropout, recurrent_dropout=dropout) 
-        cell_3 = tf.keras.layers.GRUCell(d, dropout=dropout, recurrent_dropout=dropout) 
+        cell_3 = tf.keras.layers.GRUCell(d   , dropout=dropout, recurrent_dropout=dropout)
         self.GRU = tf.keras.layers.RNN([cell_1, cell_2, cell_3])
 
     def call(self, r_t):

@@ -4,6 +4,7 @@ from Environment import d
 
 initializer = tf.keras.initializers.GlorotNormal()
 
+#就是实现公式（5），用一个perceptron计算action得分
 class Perceptron(layers.Layer):
     def __init__(self):
         super(Perceptron, self).__init__()

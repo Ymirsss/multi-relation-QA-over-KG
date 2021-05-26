@@ -4,6 +4,7 @@ from Environment import d
 
 initializer = tf.keras.initializers.GlorotNormal()
 
+#实现公式（2）（3）（4），即用注意力机制实现relation-aware q representation
 class Attention(layers.Layer):
     def __init__(self):
         super(Attention, self).__init__()

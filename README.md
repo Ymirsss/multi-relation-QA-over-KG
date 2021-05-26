@@ -18,7 +18,7 @@ pip install matplotlib
 ```bash
 pip install -r requirements.txt
 ```
-
+**注意 用到了tf2
 ## Visualizing the model results
 
 ```bash
@@ -48,3 +48,6 @@ python experiment.py
 A stepwise reasoning network and an ablated version of the network without the perceptron layer is trained using the PathQuestion dataset.
 
 Results will be stored in the subfolder /saved_models/ in csv format.
+
+###Test model
+源码只保存了训练的结果，没有进行test
